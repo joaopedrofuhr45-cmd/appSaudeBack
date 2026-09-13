@@ -1,3 +1,19 @@
 spring:
   application:
     name: appSaudeBackEnd
+  datasource:
+    url: jdbc:h2:file:./data/appsaude
+    driver-class-name: org.h2.Driver
+    username: sim
+    password: sim
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  flyway:
+    enabled: false
