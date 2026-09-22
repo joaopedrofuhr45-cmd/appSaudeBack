@@ -1,5 +1,6 @@
-package Modules.Usuarios.Model;
+package Modules.Usuarios.Persistencia;
 
+import Modules.Auth.Model.UsuarioAuth;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,9 +20,11 @@ public class UsuarioModel {
     @Column(nullable = false)
     private String nome;
 
-    @Column(nullable = false, unique = true)
-    private String cpf;
-
-    @Column(nullable = false)
-    private String senha;
+    @OneToOne(optional = false)
+    @JoinColumn(
+            name = "usuario_auth_id",
+            nullable = false,
+            unique = true
+    )
+    private UsuarioAuth usuarioAuth;
 }

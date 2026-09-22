@@ -1,5 +1,6 @@
-package Modules.Medico.Model;
+package Modules.Medico.Persistencia;
 
+import Modules.Auth.Model.UsuarioAuth;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,14 +21,16 @@ public class MedicoModel {
     private String nome;
 
     @Column(nullable = false, unique = true)
-    private String cpf;
-
-    @Column(nullable = false)
-    private String senha;
-
-    @Column(nullable = false)
     private String crm;
 
     @Column(nullable = false)
     private String especialidade;
+
+    @OneToOne(optional = false)
+    @JoinColumn(
+            name = "usuario_auth_id",
+            nullable = false,
+            unique = true
+    )
+    private UsuarioAuth usuarioAuth;
 }
