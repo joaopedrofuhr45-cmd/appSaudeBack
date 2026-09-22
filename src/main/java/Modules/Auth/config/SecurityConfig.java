@@ -1,4 +1,4 @@
-package Modules.Auth.Config;
+package Modules.Auth.config;
 
 import Modules.Auth.Filter.JwtAuthenticationFilter;
 import Modules.Auth.Service.AuthUserDetailsService;
@@ -32,10 +32,8 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-                // JWT não utiliza sessão nem proteção CSRF tradicional
                 .csrf(AbstractHttpConfigurer::disable )
 
-                // A API será stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
@@ -43,17 +41,24 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll()
 
+                        // Login não precisa de token
+                        .requestMatchers("/auth/login")
+                        .permitAll()
+
+                        // Apenas médicos
                         .requestMatchers("/medicos/**")
                         .hasRole("MEDICO")
 
+                        // Apenas atendentes
                         .requestMatchers("/atendentes/**")
                         .hasRole("ATENDENTE")
 
+                        // Apenas usuários comuns
                         .requestMatchers("/usuarios/**")
                         .hasRole("USUARIO")
 
+                        // Qualquer outra rota exige autenticação
                         .anyRequest()
                         .authenticated()
                 )
@@ -70,10 +75,17 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(authUserDetailsService);
 
-        provider.setPasswordEncoder(passwordEncoder());
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
+
+        provider.setUserDetailsService(
+                authUserDetailsService
+        );
+
+        provider.setPasswordEncoder(
+                passwordEncoder()
+        );
 
         return provider;
     }
@@ -87,6 +99,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration
     ) throws Exception {
+
         return configuration.getAuthenticationManager();
     }
 }

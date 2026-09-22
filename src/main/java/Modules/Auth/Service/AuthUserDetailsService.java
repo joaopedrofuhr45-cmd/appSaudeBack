@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthUserDetailsService implements UserDetailsService {
+public class AuthUserDetailsService
+        implements UserDetailsService {
 
     private final UsuarioAuthRepository usuarioAuthRepository;
 
@@ -21,7 +22,7 @@ public class AuthUserDetailsService implements UserDetailsService {
         return usuarioAuthRepository.findByCpf(cpf)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(
-                                "Usuário não encontrado para o CPF: " + cpf
+                                "CPF não encontrado"
                         )
                 );
     }
