@@ -28,6 +28,13 @@
 
 	<dependencies>
 
+		<!-- Faz o Spring Boot carregar o arquivo .env automaticamente ao subir -->
+		<dependency>
+			<groupId>me.paulschwarz</groupId>
+			<artifactId>spring-dotenv</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
 		<!-- Spring Web -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

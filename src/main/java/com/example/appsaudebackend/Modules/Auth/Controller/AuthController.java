@@ -23,6 +23,10 @@ public class AuthController {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    // Agora vem do .env / variável de ambiente (app.cookie.secure)
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
     @PostMapping("/login")
     public ResponseEntity<Void> login(
             @Valid @RequestBody LoginRequestDto request,
@@ -32,7 +36,7 @@ public class AuthController {
 
         ResponseCookie cookie = ResponseCookie.from("auth_token", token)
                 .httpOnly(true)
-                .secure(false) // troca pra true quando tiver HTTPS em produção
+                .secure(cookieSecure) // true em produção via COOKIE_SECURE=true
                 .path("/")
                 .maxAge(Duration.ofMillis(expiration))
                 .sameSite("Lax")

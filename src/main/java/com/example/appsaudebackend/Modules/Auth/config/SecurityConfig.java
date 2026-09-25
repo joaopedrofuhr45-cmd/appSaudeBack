@@ -3,6 +3,7 @@ package com.example.appsaudebackend.Modules.Auth.config;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthUserDetailsService;
 import com.example.appsaudebackend.Modules.Auth.filter.JwtAuthenticationFilter;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,61 +21,42 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @Getter
 @Setter
-
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final AuthUserDetailsService authUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    // Agora vem do .env / variável de ambiente (app.cors.allowed-origins)
+    // Aceita uma ou várias origens separadas por vírgula, ex:
+    // https://meuapp.com,https://admin.meuapp.com
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // CORS
                 .cors(cors -> {})
-
-                // CSRF desabilitado porque estamos usando JWT
                 .csrf(csrf -> csrf.disable())
-
-                // API stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                // Regras de acesso
                 .authorizeHttpRequests(auth -> auth
-
-                        // Login público
                         .requestMatchers("/auth/login").permitAll()
-
-                        // Rotas de médico
-                        .requestMatchers("/medicos/**")
-                        .hasRole("MEDICO")
-
-                        // Rotas de atendente
-                        .requestMatchers("/atendentes/**")
-                        .hasRole("ATENDENTE")
-
-                        // Rotas de usuário
-                        .requestMatchers("/usuarios/**")
-                        .hasRole("USUARIO")
-
-                        // Todo o restante precisa estar autenticado
+                        .requestMatchers("/medicos/**").hasRole("MEDICO")
+                        .requestMatchers("/atendentes/**").hasRole("ATENDENTE")
+                        .requestMatchers("/usuarios/**").hasRole("USUARIO")
                         .anyRequest().authenticated()
                 )
-
-                // Provider de autenticação
                 .authenticationProvider(authenticationProvider())
-
-                // Filtro JWT antes do filtro padrão de login
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -83,66 +65,44 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public AuthenticationProvider authenticationProvider() {
-
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider(authUserDetailsService);
-
         provider.setPasswordEncoder(passwordEncoder());
-
         return provider;
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration
     ) throws Exception {
-
         return configuration.getAuthenticationManager();
     }
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of("http://localhost:4200")
+                Arrays.asList(allowedOrigins.split(","))
         );
 
         configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"
-                )
+                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
         );
 
-        configuration.setAllowedHeaders(
-                List.of("*")
-        );
-
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
