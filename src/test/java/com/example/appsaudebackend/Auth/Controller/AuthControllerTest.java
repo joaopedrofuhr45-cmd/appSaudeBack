@@ -8,7 +8,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
@@ -22,29 +24,30 @@ class AuthControllerTest {
 
     @Test
     void deveRealizarLogin() throws Exception {
+        when(authService.login("12345678900", "123456")).thenReturn("token-fake");
 
         mockMvc.perform(
                         post("/auth/login")
                                 .contentType("application/json")
                                 .content("""
                                 {
-                                    "email": "teste@email.com",
+                                    "cpf": "12345678900",
                                     "senha": "123456"
                                 }
                                 """)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Set-Cookie"));
     }
 
     @Test
     void deveRejeitarDadosInvalidos() throws Exception {
-
         mockMvc.perform(
                         post("/auth/login")
                                 .contentType("application/json")
                                 .content("""
                                 {
-                                    "email": "",
+                                    "cpf": "",
                                     "senha": ""
                                 }
                                 """)

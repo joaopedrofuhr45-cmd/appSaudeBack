@@ -1,59 +1,65 @@
 package com.example.appsaudebackend.Auth.Service;
 
+import com.example.appsaudebackend.Modules.Auth.Model.Role;
+import com.example.appsaudebackend.Modules.Auth.Model.UsuarioAuth;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthService;
 import com.example.appsaudebackend.Modules.Auth.Service.JwtService;
-import com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
     @Mock
-    private UsuarioRepository usuarioRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
+    private AuthenticationManager authenticationManager;
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private AuthService authService;
 
     @Test
     void deveAutenticarUsuarioComCredenciaisValidas() {
-        // Arrange
-        // Usuario usuario = ...
-        // when(usuarioRepository.findByEmail(...)).thenReturn(Optional.of(usuario));
-        // when(passwordEncoder.matches(...)).thenReturn(true);
-        // when(jwtService.generateToken(...)).thenReturn("token");
+        UsuarioAuth usuarioAuth = new UsuarioAuth();
+        usuarioAuth.setCpf("12345678900");
+        usuarioAuth.setSenha("senha-criptografada");
+        usuarioAuth.setRole(Role.USUARIO);
 
-        // Act
-        // var resultado = authService.login(...);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(usuarioAuth);
+        when(jwtService.generateToken(usuarioAuth)).thenReturn("token-gerado");
 
-        // Assert
-        // assertNotNull(resultado);
-        // assertEquals("token", resultado.token());
+        String resultado = authService.login("12345678900", "senha-correta");
 
-        // verify(usuarioRepository).findByEmail(...);
-        // verify(passwordEncoder).matches(...);
-        // verify(jwtService).generateToken(...);
+        assertEquals("token-gerado", resultado);
+        verify(jwtService).generateToken(usuarioAuth);
     }
 
     @Test
     void deveRecusarCredenciaisInvalidas() {
-        // Arrange
-        // ...
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("Credenciais inválidas"));
 
-        // Act + Assert
-        // assertThrows(...);
+        assertThrows(BadCredentialsException.class, () ->
+                authService.login("12345678900", "senha-errada")
+        );
+
+        verifyNoInteractions(jwtService);
     }
 }
