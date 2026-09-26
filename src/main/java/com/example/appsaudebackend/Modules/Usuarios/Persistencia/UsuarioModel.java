@@ -20,6 +20,12 @@ public class UsuarioModel {
     @Column(nullable = false)
     private String nome;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String telefone;
+
     @OneToOne(optional = false)
     @JoinColumn(
             name = "usuario_auth_id",

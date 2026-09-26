@@ -28,7 +28,7 @@
 
 	<dependencies>
 
-		<!-- Faz o Spring Boot carregar o arquivo .env automaticamente ao subir -->
+		<!-- Carrega o arquivo .env automaticamente -->
 		<dependency>
 			<groupId>me.paulschwarz</groupId>
 			<artifactId>spring-dotenv</artifactId>
@@ -66,7 +66,7 @@
 			<version>${jjwt.version}</version>
 		</dependency>
 
-		<!-- JWT Implementação -->
+		<!-- JWT implementação -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
@@ -114,13 +114,21 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Testes -->
+		<!-- Testes gerais -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Testes de Controllers MVC -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Testes do Spring Security -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>

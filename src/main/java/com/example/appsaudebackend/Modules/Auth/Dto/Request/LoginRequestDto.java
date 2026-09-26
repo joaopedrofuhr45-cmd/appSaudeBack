@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginRequestDto {
-
     @NotBlank(message = "CPF é obrigatório")
     private String cpf;
 

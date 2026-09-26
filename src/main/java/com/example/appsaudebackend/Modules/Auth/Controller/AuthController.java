@@ -1,5 +1,6 @@
 package com.example.appsaudebackend.Modules.Auth.Controller;
 
+import com.example.appsaudebackend.Modules.Auth.Dto.Request.CadastroPacienteDto;
 import com.example.appsaudebackend.Modules.Auth.Dto.Request.LoginRequestDto;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,5 +47,11 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/cadastro")
+    public ResponseEntity<Void> cadastrar(@Valid @RequestBody CadastroPacienteDto dto) {
+        authService.cadastrarPaciente(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
