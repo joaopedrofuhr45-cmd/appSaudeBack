@@ -1,0 +1,2 @@
+package com.example.appsaudebackend.Modules.Atendente.Dto.Request;
+import jakarta.validation.constraints.*; public record AtualizarAtendenteRequestDto(@NotBlank @Size(max=150) String nome,@NotBlank @Email @Size(max=150) String email,@NotBlank @Size(max=30) String telefone){}
