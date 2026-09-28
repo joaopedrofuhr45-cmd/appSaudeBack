@@ -9,10 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
-
     List<Consulta> findByDataHoraBetweenOrderByDataHoraAsc(LocalDateTime inicio, LocalDateTime fim);
-
     List<Consulta> findByPacienteOrderByDataHoraAsc(UsuarioModel paciente);
-
     List<Consulta> findByPacienteAndStatusOrderByDataHoraDesc(UsuarioModel paciente, StatusConsulta status);
+    boolean existsByMedicoIdAndDataHora(Long medicoId, LocalDateTime dataHora);
 }
