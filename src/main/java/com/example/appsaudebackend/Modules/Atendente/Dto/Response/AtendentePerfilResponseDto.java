@@ -1,2 +1,2 @@
 package com.example.appsaudebackend.Modules.Atendente.Dto.Response;
-public record AtendentePerfilResponseDto(String nome,String email,String setor){}
+public record AtendentePerfilResponseDto(String nome,String email,String telefone,String setor){}
