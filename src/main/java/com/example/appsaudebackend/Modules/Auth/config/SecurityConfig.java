@@ -21,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,48 +30,39 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final AuthUserDetailsService authUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    // Agora vem do .env / variável de ambiente (app.cors.allowed-origins)
-    // Aceita uma ou várias origens separadas por vírgula, ex:
-    // https://meuapp.com,https://admin.meuapp.com
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                .cors(cors -> {})
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/cadastro").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/consultas").hasAnyRole("ATENDENTE", "MEDICO")
-                        .requestMatchers("/consultas/paciente/**").hasRole("USUARIO")
-                        .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("USUARIO", "ATENDENTE")
-                        .requestMatchers("/medicos/**").hasRole("MEDICO")
-                        .requestMatchers("/atendentes/**").hasRole("ATENDENTE")
-                        .requestMatchers("/usuarios/**").hasRole("USUARIO")
-                        .anyRequest().authenticated()
-                )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
-
+            .cors(cors -> {})
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/login", "/auth/cadastro").permitAll()
+                .requestMatchers("/auth/logout", "/auth/me").authenticated()
+                .requestMatchers(HttpMethod.GET, "/consultas").hasAnyRole("ATENDENTE", "MEDICO")
+                .requestMatchers("/consultas/paciente/**").hasRole("USUARIO")
+                .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("USUARIO", "ATENDENTE")
+                .requestMatchers(HttpMethod.GET, "/medicos", "/especialidades")
+                    .hasAnyRole("USUARIO", "ATENDENTE", "MEDICO")
+                .requestMatchers("/medicos/**").hasRole("MEDICO")
+                .requestMatchers("/atendentes/**").hasRole("ATENDENTE")
+                .requestMatchers("/usuarios/**").hasRole("USUARIO")
+                .anyRequest().authenticated()
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(authUserDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(authUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
@@ -83,31 +73,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration
-    ) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+            throws Exception {
         return configuration.getAuthenticationManager();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        configuration.setAllowedOrigins(
-                Arrays.asList(allowedOrigins.split(","))
-        );
-
-        configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        );
-
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 }
