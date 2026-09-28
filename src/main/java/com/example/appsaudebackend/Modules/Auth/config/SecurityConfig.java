@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -51,7 +52,9 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login", "/auth/cadastro").permitAll()
-                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/consultas").hasAnyRole("ATENDENTE", "MEDICO")
+                        .requestMatchers("/consultas/paciente/**").hasRole("USUARIO")
+                        .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("USUARIO", "ATENDENTE")
                         .requestMatchers("/medicos/**").hasRole("MEDICO")
                         .requestMatchers("/atendentes/**").hasRole("ATENDENTE")
                         .requestMatchers("/usuarios/**").hasRole("USUARIO")
