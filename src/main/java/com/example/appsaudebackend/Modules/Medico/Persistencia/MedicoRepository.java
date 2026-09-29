@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface MedicoRepository extends JpaRepository<MedicoModel, Long> {
     Optional<MedicoModel> findByUsuarioAuthCpf(String cpf);
+    Optional<MedicoModel> findByEmailAndIdNot(String email, Long id);
     List<MedicoModel> findByEspecialidadeOrderByNomeAsc(String especialidade);
     List<MedicoModel> findAllByOrderByNomeAsc();
 }
