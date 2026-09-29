@@ -1,6 +1,9 @@
 package com.example.appsaudebackend.Modules.Consulta;
+
 import com.example.appsaudebackend.Modules.Auth.Model.UsuarioAuth;
 import com.example.appsaudebackend.Modules.Consulta.Dto.Request.ConsultaRequestDto;
+import com.example.appsaudebackend.Modules.Consulta.Dto.Request.FinalizarConsultaRequestDto;
+import com.example.appsaudebackend.Modules.Consulta.Dto.Response.ConsultaDetalheResponseDto;
 import com.example.appsaudebackend.Modules.Consulta.Dto.Response.ConsultaResponseDto;
 import com.example.appsaudebackend.Modules.Consulta.Dto.Response.HistoricoPacienteResponseDto;
 import com.example.appsaudebackend.Modules.Consulta.Dto.Response.PacienteConsultaResponseDto;
@@ -22,8 +25,15 @@ public class ConsultaController {
 
     @GetMapping
     public ResponseEntity<List<ConsultaResponseDto>> listarPorData(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
-        return ResponseEntity.ok(consultaService.listarPorData(data));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+            @AuthenticationPrincipal UsuarioAuth solicitante) {
+        return ResponseEntity.ok(consultaService.listarPorData(data, solicitante));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ConsultaDetalheResponseDto> obter(
+            @PathVariable Long id, @AuthenticationPrincipal UsuarioAuth solicitante) {
+        return ResponseEntity.ok(consultaService.obter(id, solicitante));
     }
 
     @PostMapping
@@ -32,6 +42,14 @@ public class ConsultaController {
             @AuthenticationPrincipal UsuarioAuth solicitante) {
         consultaService.criar(dto, solicitante);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PatchMapping("/{id}/finalizar")
+    public ResponseEntity<ConsultaDetalheResponseDto> finalizar(
+            @PathVariable Long id,
+            @Valid @RequestBody FinalizarConsultaRequestDto dto,
+            @AuthenticationPrincipal UsuarioAuth solicitante) {
+        return ResponseEntity.ok(consultaService.finalizar(id, dto, solicitante));
     }
 
     @GetMapping("/paciente")
