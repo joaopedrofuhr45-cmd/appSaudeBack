@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,33 +23,35 @@ public class AuthService {
     private final UsuarioAuthRepository usuarioAuthRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthAccountService accountService;
+    private final GoogleIdentityService googleIdentityService;
 
-    public String login(String cpf, String senha) {
+    public String login(String email, String senha) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(cpf, senha)
+                new UsernamePasswordAuthenticationToken(accountService.normalizar(email), senha)
         );
         UsuarioAuth usuarioAuth = (UsuarioAuth) authentication.getPrincipal();
         return jwtService.generateToken(usuarioAuth);
     }
 
+    public String loginComGoogle(String credential) {
+        return jwtService.generateToken(googleIdentityService.autenticar(credential));
+    }
+
     @Transactional
     public void cadastrarPaciente(CadastroPacienteDto dto) {
-        if (usuarioAuthRepository.findByCpf(dto.getCpf()).isPresent()) {
-            throw new ConflitoException("CPF já cadastrado.");
-        }
-        if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new ConflitoException("E-mail já cadastrado.");
-        }
+        String email = accountService.normalizar(dto.getEmail());
+        accountService.garantirEmailDisponivel(email, null);
         UsuarioAuth usuarioAuth = new UsuarioAuth();
-        usuarioAuth.setCpf(dto.getCpf());
+        usuarioAuth.setInternalKey(UUID.randomUUID().toString());
+        usuarioAuth.setEmail(email);
         usuarioAuth.setSenha(passwordEncoder.encode(dto.getSenha()));
         usuarioAuth.setRole(Role.USUARIO);
         usuarioAuthRepository.save(usuarioAuth);
 
         UsuarioModel usuario = new UsuarioModel();
         usuario.setNome(dto.getNome());
-        usuario.setEmail(dto.getEmail());
-        usuario.setTelefone(dto.getTelefone());
+        usuario.setEmail(email);
         usuario.setUsuarioAuth(usuarioAuth);
         usuarioRepository.save(usuario);
     }

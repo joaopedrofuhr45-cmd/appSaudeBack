@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface UsuarioAuthRepository
         extends JpaRepository<UsuarioAuth, Long> {
 
-    Optional<UsuarioAuth> findByCpf(String cpf);
+    Optional<UsuarioAuth> findByEmailIgnoreCase(String email);
+    Optional<UsuarioAuth> findByGoogleSub(String googleSub);
 }

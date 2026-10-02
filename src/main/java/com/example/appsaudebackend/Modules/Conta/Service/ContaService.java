@@ -16,8 +16,8 @@ public class ContaService {
     private final PasswordEncoder encoder;
 
     @Transactional
-    public void alterarSenha(String cpf, AlterarSenhaRequestDto dto) {
-        UsuarioAuth a = repo.findByCpf(cpf).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário autenticado não encontrado."));
+    public void alterarSenha(String email, AlterarSenhaRequestDto dto) {
+        UsuarioAuth a = repo.findByEmailIgnoreCase(email).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário autenticado não encontrado."));
         if (!encoder.matches(dto.senhaAtual(), a.getSenha()))
             throw new RegraNegocioException("A senha atual está incorreta.");
         if (encoder.matches(dto.novaSenha(), a.getSenha()))

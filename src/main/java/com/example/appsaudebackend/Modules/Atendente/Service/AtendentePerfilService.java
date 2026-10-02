@@ -3,7 +3,9 @@ package com.example.appsaudebackend.Modules.Atendente.Service;
 import com.example.appsaudebackend.Modules.Atendente.Dto.Request.AtualizarAtendenteRequestDto;
 import com.example.appsaudebackend.Modules.Atendente.Dto.Response.AtendentePerfilResponseDto;
 import com.example.appsaudebackend.Modules.Atendente.Pesistencia.*;
-import com.example.appsaudebackend.Shared.Exception.*;
+import com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository;
+import com.example.appsaudebackend.Modules.Auth.Service.AuthAccountService;
+import com.example.appsaudebackend.Shared.Exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,26 +14,29 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AtendentePerfilService {
     private final AtendenteRepository repo;
+    private final UsuarioAuthRepository authRepository;
+    private final AuthAccountService accountService;
 
     @Transactional(readOnly = true)
-    public AtendentePerfilResponseDto obter(String cpf) {
-        return toResponse(find(cpf));
+    public AtendentePerfilResponseDto obter(String email) {
+        return toResponse(find(email));
     }
 
     @Transactional
-    public AtendentePerfilResponseDto atualizar(String cpf, AtualizarAtendenteRequestDto dto) {
-        AtendenteModel a = find(cpf);
-        repo.findByEmail(dto.email()).filter(o -> !o.getId().equals(a.getId())).ifPresent(o -> {
-            throw new ConflitoException("E-mail já cadastrado.");
-        });
+    public AtendentePerfilResponseDto atualizar(String email, AtualizarAtendenteRequestDto dto) {
+        AtendenteModel a = find(email);
+        String novoEmail = accountService.normalizar(dto.email());
+        accountService.garantirEmailDisponivel(novoEmail, a.getUsuarioAuth().getId());
         a.setNome(dto.nome());
-        a.setEmail(dto.email());
+        a.setEmail(novoEmail);
         a.setTelefone(dto.telefone());
+        a.getUsuarioAuth().setEmail(novoEmail);
+        authRepository.save(a.getUsuarioAuth());
         return toResponse(repo.save(a));
     }
 
-    private AtendenteModel find(String cpf) {
-        return repo.findByUsuarioAuthCpf(cpf).orElseThrow(() -> new RecursoNaoEncontradoException("Atendente não encontrado."));
+    private AtendenteModel find(String email) {
+        return repo.findByUsuarioAuthEmailIgnoreCase(email).orElseThrow(() -> new RecursoNaoEncontradoException("Atendente não encontrado."));
     }
 
     private AtendentePerfilResponseDto toResponse(AtendenteModel a) {

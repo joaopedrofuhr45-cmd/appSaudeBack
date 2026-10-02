@@ -19,8 +19,16 @@ public class UsuarioAuth implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String cpf;
+    // `cpf` is the legacy database column. It now stores an opaque migration key,
+    // never a CPF and never the user's authentication identity.
+    @Column(name = "cpf", nullable = false, unique = true)
+    private String internalKey;
+
+    @Column(unique = true)
+    private String email;
+
+    @Column(name = "google_sub", unique = true)
+    private String googleSub;
 
     @Column(nullable = false)
     private String senha;
@@ -30,7 +38,7 @@ public class UsuarioAuth implements UserDetails {
 
     @Override
     public String getUsername() {
-        return cpf;
+        return email;
     }
 
     @Override

@@ -31,7 +31,7 @@ public class JwtService {
 
     public String generateToken(UsuarioAuth usuario) {
         return Jwts.builder()
-                .subject(usuario.getUsername())
+                .subject(usuario.getId().toString())
                 .claim("role", usuario.getRole().name())
                 .issuedAt(new Date())
                 .expiration(
@@ -43,17 +43,12 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractCpf(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Long extractUserId(String token) {
+        return Long.valueOf(extractClaim(token, Claims::getSubject));
     }
 
-    public boolean isTokenValid(
-            String token,
-            String cpf
-    ) {
-        String cpfExtraido = extractCpf(token);
-
-        return cpfExtraido.equals(cpf)
+    public boolean isTokenValid(String token, Long userId) {
+        return extractUserId(token).equals(userId)
                 && !isTokenExpired(token);
     }
 

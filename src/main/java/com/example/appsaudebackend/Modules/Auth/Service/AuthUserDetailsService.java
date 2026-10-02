@@ -1,6 +1,5 @@
 package com.example.appsaudebackend.Modules.Auth.Service;
 
-import com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,17 +11,18 @@ import org.springframework.stereotype.Service;
 public class AuthUserDetailsService
         implements UserDetailsService {
 
-    private final UsuarioAuthRepository usuarioAuthRepository;
+    private final AuthAccountService accountService;
+    private final com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository usuarioAuthRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String cpf)
+    public UserDetails loadUserByUsername(String email)
             throws UsernameNotFoundException {
+        return accountService.encontrarPorEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("E-mail não encontrado."));
+    }
 
-        return usuarioAuthRepository.findByCpf(cpf)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(
-                                "CPF não encontrado"
-                        )
-                );
+    public UserDetails loadById(Long id) {
+        return usuarioAuthRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Conta autenticada não encontrada."));
     }
 }
