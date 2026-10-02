@@ -40,7 +40,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/login", "/auth/cadastro").permitAll()
+                .requestMatchers("/auth/login", "/auth/google", "/auth/cadastro").permitAll()
                 .requestMatchers("/auth/logout", "/auth/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/consultas").hasAnyRole("ATENDENTE", "MEDICO")
                 .requestMatchers(HttpMethod.GET, "/consultas/paciente/**").hasRole("USUARIO")

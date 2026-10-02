@@ -116,13 +116,13 @@ public class ConsultaService {
 
     private void validarAcesso(Consulta consulta, UsuarioAuth solicitante) {
         if (solicitante.getRole() == Role.MEDICO) {
-            if (!consulta.getMedico().getUsuarioAuth().getCpf().equals(solicitante.getCpf()))
+            if (!consulta.getMedico().getUsuarioAuth().getId().equals(solicitante.getId()))
                 throw new RegraNegocioException("A consulta não pertence ao médico autenticado.");
             return;
         }
         if (solicitante.getRole() == Role.ATENDENTE) return;
         if (solicitante.getRole() == Role.USUARIO &&
-                !consulta.getPaciente().getUsuarioAuth().getCpf().equals(solicitante.getCpf()))
+                !consulta.getPaciente().getUsuarioAuth().getId().equals(solicitante.getId()))
             throw new RegraNegocioException("A consulta não pertence ao paciente autenticado.");
         if (solicitante.getRole() != Role.USUARIO)
             throw new RegraNegocioException("Perfil sem acesso à consulta.");
@@ -144,12 +144,12 @@ public class ConsultaService {
     }
 
     private UsuarioModel pacienteLogado(UsuarioAuth solicitante) {
-        return usuarioRepository.findByUsuarioAuthCpf(solicitante.getCpf())
+        return usuarioRepository.findByUsuarioAuthId(solicitante.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Paciente não encontrado."));
     }
 
     private MedicoModel medicoLogado(UsuarioAuth solicitante) {
-        return medicoRepository.findByUsuarioAuthCpf(solicitante.getCpf())
+        return medicoRepository.findByUsuarioAuthId(solicitante.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado."));
     }
 }

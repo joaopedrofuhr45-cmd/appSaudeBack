@@ -15,12 +15,6 @@ public class CadastroPacienteDto {
     @Email(message = "E-mail inválido")
     private String email;
 
-    @NotBlank(message = "CPF é obrigatório")
-    private String cpf;
-
-    @NotBlank(message = "Telefone é obrigatório")
-    private String telefone;
-
     @NotBlank(message = "Senha é obrigatória")
     @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
     private String senha;

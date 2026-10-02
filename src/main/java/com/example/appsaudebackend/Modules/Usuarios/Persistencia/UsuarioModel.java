@@ -23,7 +23,7 @@ public class UsuarioModel {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String telefone;
 
     @OneToOne(optional = false)
