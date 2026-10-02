@@ -30,12 +30,15 @@ public class AuthController {
     @Value("${app.cookie.secure}")
     private boolean cookieSecure;
 
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
+
     @PostMapping("/login")
     public ResponseEntity<Void> login(@Valid @RequestBody LoginRequestDto request, HttpServletResponse response) {
         String token = authService.login(request.getCpf(), request.getSenha());
         ResponseCookie cookie = ResponseCookie.from("auth_token", token)
                 .httpOnly(true).secure(cookieSecure).path("/")
-                .maxAge(Duration.ofMillis(expiration)).sameSite("Lax").build();
+                .maxAge(Duration.ofMillis(expiration)).sameSite(cookieSameSite).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.ok().build();
     }
@@ -44,7 +47,7 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("auth_token", "")
                 .httpOnly(true).secure(cookieSecure).path("/")
-                .maxAge(Duration.ZERO).sameSite("Lax").build();
+                .maxAge(Duration.ZERO).sameSite(cookieSameSite).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.noContent().build();
     }
