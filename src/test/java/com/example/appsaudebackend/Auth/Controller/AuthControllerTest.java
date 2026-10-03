@@ -2,6 +2,8 @@ package com.example.appsaudebackend.Auth.Controller;
 
 import com.example.appsaudebackend.Modules.Auth.Controller.AuthController;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthService;
+import com.example.appsaudebackend.Modules.Auth.Service.JwtService;
+import com.example.appsaudebackend.Modules.Auth.Service.AuthUserDetailsService;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AuthController.class )
+@WebMvcTest(properties = {"jwt.expiration=3600000", "app.cookie.secure=false", "app.cors.allowed-origins=http://localhost:4200"}, controllers = AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
@@ -29,10 +31,16 @@ class AuthControllerTest {
     @MockitoBean
     private AuthService authService;
 
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private AuthUserDetailsService authUserDetailsService;
+
     @Test
     void deveRealizarLogin() throws Exception {
         when(authService.login(
-                "12345678900",
+                "ana@example.com",
                 "123456"
         )).thenReturn("token-fake");
 
@@ -41,7 +49,7 @@ class AuthControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
-                                            "cpf": "12345678900",
+                                            "email": "ana@example.com",
                                             "senha": "123456"
                                         }
                                         """)
@@ -50,7 +58,7 @@ class AuthControllerTest {
                 .andExpect(header().exists("Set-Cookie"));
 
         verify(authService).login(
-                "12345678900",
+                "ana@example.com",
                 "123456"
         );
     }
@@ -62,7 +70,7 @@ class AuthControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
-                                            "cpf": "",
+                                            "email": "",
                                             "senha": ""
                                         }
                                         """)
