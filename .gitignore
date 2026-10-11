@@ -36,4 +36,4 @@ build/
 .env
 .env*
 !.env.example
-.env
+data/
