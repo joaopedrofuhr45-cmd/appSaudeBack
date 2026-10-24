@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/consultas/paciente/**").hasRole("USUARIO")
                 .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("USUARIO", "ATENDENTE")
                 .requestMatchers(HttpMethod.PATCH, "/consultas/*/finalizar").hasRole("MEDICO")
+                .requestMatchers(HttpMethod.PATCH, "/consultas/*/cancelar").hasAnyRole("USUARIO", "ATENDENTE")
                 .requestMatchers(HttpMethod.GET, "/consultas/*").hasAnyRole("USUARIO", "ATENDENTE", "MEDICO")
                 .requestMatchers(HttpMethod.GET, "/medicos", "/especialidades").hasAnyRole("USUARIO", "ATENDENTE", "MEDICO")
                 .requestMatchers("/medicos/**").hasRole("MEDICO")
