@@ -78,6 +78,23 @@ public class ConsultaService {
     }
 
     @Transactional
+    public ConsultaDetalheResponseDto cancelar(Long id, UsuarioAuth solicitante) {
+        Consulta consulta = buscar(id);
+        if (solicitante.getRole() != Role.USUARIO && solicitante.getRole() != Role.ATENDENTE) {
+            throw new RegraNegocioException("Apenas paciente ou atendente pode cancelar a consulta.");
+        }
+        validarAcesso(consulta, solicitante);
+        if (consulta.getStatus() == StatusConsulta.CANCELADO) {
+            throw new RegraNegocioException("A consulta já foi cancelada.");
+        }
+        if (consulta.getStatus() == StatusConsulta.CONCLUIDO) {
+            throw new RegraNegocioException("Não é possível cancelar uma consulta já concluída.");
+        }
+        consulta.setStatus(StatusConsulta.CANCELADO);
+        return toDetalhe(consultaRepository.save(consulta));
+    }
+
+    @Transactional
     public void criar(ConsultaRequestDto dto, UsuarioAuth solicitante) {
         UsuarioModel paciente = resolverPaciente(dto, solicitante);
         MedicoModel medico = medicoRepository.findById(dto.getMedicoId())

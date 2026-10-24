@@ -52,6 +52,12 @@ public class ConsultaController {
         return ResponseEntity.ok(consultaService.finalizar(id, dto, solicitante));
     }
 
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<ConsultaDetalheResponseDto> cancelar(
+            @PathVariable Long id, @AuthenticationPrincipal UsuarioAuth solicitante) {
+        return ResponseEntity.ok(consultaService.cancelar(id, solicitante));
+    }
+
     @GetMapping("/paciente")
     public ResponseEntity<List<PacienteConsultaResponseDto>> minhasConsultas(
             @AuthenticationPrincipal UsuarioAuth solicitante) {

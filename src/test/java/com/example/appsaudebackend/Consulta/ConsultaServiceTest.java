@@ -116,6 +116,63 @@ class ConsultaServiceTest {
     }
 
     @Test
+    void pacienteCancelaPropriaConsulta() {
+        UsuarioAuth auth = new UsuarioAuth();
+        auth.setId(1L);
+        auth.setRole(Role.USUARIO);
+        UsuarioModel paciente = new UsuarioModel();
+        paciente.setUsuarioAuth(auth);
+        Consulta consulta = consulta(paciente, medico(), StatusConsulta.AGENDADO);
+        when(consultaRepository.findById(4L)).thenReturn(Optional.of(consulta));
+        when(consultaRepository.save(consulta)).thenReturn(consulta);
+
+        var result = service.cancelar(4L, auth);
+
+        assertEquals("CANCELADO", result.status());
+        assertEquals(StatusConsulta.CANCELADO, consulta.getStatus());
+    }
+
+    @Test
+    void pacienteNaoCancelaConsultaDeOutroPaciente() {
+        UsuarioAuth solicitante = new UsuarioAuth();
+        solicitante.setId(2L);
+        solicitante.setRole(Role.USUARIO);
+        UsuarioAuth dono = new UsuarioAuth();
+        dono.setId(1L);
+        UsuarioModel paciente = new UsuarioModel();
+        paciente.setUsuarioAuth(dono);
+        Consulta consulta = consulta(paciente, medico(), StatusConsulta.AGENDADO);
+        when(consultaRepository.findById(4L)).thenReturn(Optional.of(consulta));
+
+        assertThrows(RegraNegocioException.class, () -> service.cancelar(4L, solicitante));
+        verify(consultaRepository, never()).save(any());
+    }
+
+    @Test
+    void naoCancelaConsultaConcluidaOuJaCancelada() {
+        UsuarioAuth auth = new UsuarioAuth();
+        auth.setId(1L);
+        auth.setRole(Role.ATENDENTE);
+        for (StatusConsulta status : new StatusConsulta[]{StatusConsulta.CONCLUIDO, StatusConsulta.CANCELADO}) {
+            Consulta consulta = consulta(new UsuarioModel(), medico(), status);
+            when(consultaRepository.findById(4L)).thenReturn(Optional.of(consulta));
+            assertThrows(RegraNegocioException.class, () -> service.cancelar(4L, auth));
+        }
+        verify(consultaRepository, never()).save(any());
+    }
+
+    @Test
+    void medicoNaoPodeCancelarConsulta() {
+        UsuarioAuth auth = new UsuarioAuth();
+        auth.setId(30L);
+        auth.setRole(Role.MEDICO);
+        Consulta consulta = consulta(new UsuarioModel(), medico(), StatusConsulta.AGENDADO);
+        when(consultaRepository.findById(4L)).thenReturn(Optional.of(consulta));
+
+        assertThrows(RegraNegocioException.class, () -> service.cancelar(4L, auth));
+    }
+
+    @Test
     void consultaInexistenteRetornaErroDeRecursoNaoEncontrado() {
         when(consultaRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(RecursoNaoEncontradoException.class, () -> service.obter(99L, new UsuarioAuth()));
