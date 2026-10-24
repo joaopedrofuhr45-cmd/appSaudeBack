@@ -3,8 +3,8 @@ package com.example.appsaudebackend.Modules.Auth.Service;
 import com.example.appsaudebackend.Modules.Auth.Model.Role;
 import com.example.appsaudebackend.Modules.Auth.Model.UsuarioAuth;
 import com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository;
-import com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioModel;
-import com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioRepository;
+import com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteModel;
+import com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteRepository;
 import com.example.appsaudebackend.Shared.Exception.RegraNegocioException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -30,7 +30,7 @@ public class GoogleIdentityService {
 
     private final AuthAccountService accountService;
     private final UsuarioAuthRepository authRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final PacienteRepository pacienteRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.google.client-id:}")
@@ -69,12 +69,12 @@ public class GoogleIdentityService {
         conta.setRole(Role.USUARIO);
         conta = authRepository.save(conta);
 
-        UsuarioModel paciente = new UsuarioModel();
+        PacienteModel paciente = new PacienteModel();
         paciente.setNome(nome);
         paciente.setEmail(email);
         paciente.setTelefone(null);
         paciente.setUsuarioAuth(conta);
-        usuarioRepository.save(paciente);
+        pacienteRepository.save(paciente);
         return conta;
     }
 

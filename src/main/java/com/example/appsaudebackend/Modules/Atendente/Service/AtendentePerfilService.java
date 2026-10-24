@@ -3,7 +3,7 @@ package com.example.appsaudebackend.Modules.Atendente.Service;
 import com.example.appsaudebackend.Modules.Atendente.Dto.Request.AtualizarAtendenteRequestDto;
 import com.example.appsaudebackend.Modules.Atendente.Dto.Request.AlterarSenhaAtendenteRequestDto;
 import com.example.appsaudebackend.Modules.Atendente.Dto.Response.AtendentePerfilResponseDto;
-import com.example.appsaudebackend.Modules.Atendente.Pesistencia.*;
+import com.example.appsaudebackend.Modules.Atendente.Persistencia.*;
 import com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthAccountService;
 import com.example.appsaudebackend.Shared.Exception.RecursoNaoEncontradoException;

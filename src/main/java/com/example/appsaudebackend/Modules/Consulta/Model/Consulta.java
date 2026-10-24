@@ -1,7 +1,7 @@
 package com.example.appsaudebackend.Modules.Consulta.Model;
 
 import com.example.appsaudebackend.Modules.Medico.Persistencia.MedicoModel;
-import com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioModel;
+import com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteModel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +22,7 @@ public class Consulta {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "paciente_id", nullable = false)
-    private UsuarioModel paciente;
+    private PacienteModel paciente;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "medico_id", nullable = false)

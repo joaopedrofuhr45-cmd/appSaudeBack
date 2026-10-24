@@ -1,10 +1,10 @@
 package com.example.appsaudebackend.Modules.Auth.Service;
 
-import com.example.appsaudebackend.Modules.Atendente.Pesistencia.AtendenteRepository;
+import com.example.appsaudebackend.Modules.Atendente.Persistencia.AtendenteRepository;
 import com.example.appsaudebackend.Modules.Auth.Model.UsuarioAuth;
 import com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository;
 import com.example.appsaudebackend.Modules.Medico.Persistencia.MedicoRepository;
-import com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioRepository;
+import com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteRepository;
 import com.example.appsaudebackend.Shared.Exception.ConflitoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthAccountService {
     private final UsuarioAuthRepository authRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final PacienteRepository pacienteRepository;
     private final MedicoRepository medicoRepository;
     private final AtendenteRepository atendenteRepository;
 
@@ -29,7 +29,7 @@ public class AuthAccountService {
         String normalizado = normalizar(email);
         List<UsuarioAuth> encontrados = new ArrayList<>();
         authRepository.findByEmailIgnoreCase(normalizado).ifPresent(encontrados::add);
-        usuarioRepository.findByEmailIgnoreCase(normalizado).map(u -> u.getUsuarioAuth()).ifPresent(encontrados::add);
+        pacienteRepository.findByEmailIgnoreCase(normalizado).map(u -> u.getUsuarioAuth()).ifPresent(encontrados::add);
         medicoRepository.findByEmailIgnoreCase(normalizado).map(m -> m.getUsuarioAuth()).ifPresent(encontrados::add);
         atendenteRepository.findByEmailIgnoreCase(normalizado).map(a -> a.getUsuarioAuth()).ifPresent(encontrados::add);
 
@@ -52,7 +52,7 @@ public class AuthAccountService {
         String normalizado = normalizar(email);
         boolean usadoPorOutro = authRepository.findByEmailIgnoreCase(normalizado)
                 .filter(auth -> !auth.getId().equals(ignorarAuthId)).isPresent()
-                || usuarioRepository.findByEmailIgnoreCase(normalizado)
+                || pacienteRepository.findByEmailIgnoreCase(normalizado)
                     .filter(u -> !u.getUsuarioAuth().getId().equals(ignorarAuthId)).isPresent()
                 || medicoRepository.findByEmailIgnoreCase(normalizado)
                     .filter(m -> !m.getUsuarioAuth().getId().equals(ignorarAuthId)).isPresent()

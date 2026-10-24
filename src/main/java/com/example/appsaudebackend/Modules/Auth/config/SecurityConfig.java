@@ -42,8 +42,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/login", "/auth/google", "/auth/cadastro").permitAll()
                 .requestMatchers("/auth/logout", "/auth/me").authenticated()
-                .requestMatchers(HttpMethod.GET, "/consultas").hasAnyRole("ATENDENTE", "MEDICO")
-                .requestMatchers(HttpMethod.GET, "/consultas/paciente/**").hasRole("USUARIO")
+                .requestMatchers(HttpMethod.GET, "/consultas").hasRole("ATENDENTE")
                 .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("USUARIO", "ATENDENTE")
                 .requestMatchers(HttpMethod.PATCH, "/consultas/*/finalizar").hasRole("MEDICO")
                 .requestMatchers(HttpMethod.PATCH, "/consultas/*/cancelar").hasAnyRole("USUARIO", "ATENDENTE")
@@ -52,7 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/medicos/**").hasRole("MEDICO")
                 .requestMatchers("/atendentes/**").hasRole("ATENDENTE")
                 .requestMatchers("/pacientes").hasRole("ATENDENTE")
-                .requestMatchers("/usuarios/**").hasRole("USUARIO")
+                .requestMatchers("/pacientes/me/**").hasRole("USUARIO")
                 .anyRequest().authenticated())
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

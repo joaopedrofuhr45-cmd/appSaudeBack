@@ -1,7 +1,9 @@
 package com.example.appsaudebackend.Modules.Medico.Service;
 
 import com.example.appsaudebackend.Modules.Medico.Dto.Response.MedicoResponseDto;
+import com.example.appsaudebackend.Modules.Medico.Persistencia.MedicoModel;
 import com.example.appsaudebackend.Modules.Medico.Persistencia.MedicoRepository;
+import com.example.appsaudebackend.Shared.Exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -23,10 +25,17 @@ public class MedicoService {
     }
 
     public List<String> listarEspecialidades() {
-        return medicoRepository.findAllByOrderByNomeAsc().stream()
-                .map(m -> m.getEspecialidade())
-                .distinct()
-                .sorted()
-                .toList();
+        return medicoRepository.findDistinctEspecialidades();
+    }
+
+    /** Usado por outros módulos (ex: Consulta) em vez de acessar o MedicoRepository direto. */
+    public MedicoModel buscarPorId(Long id) {
+        return medicoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado."));
+    }
+
+    public MedicoModel buscarPorUsuarioAuthId(Long usuarioAuthId) {
+        return medicoRepository.findByUsuarioAuthId(usuarioAuthId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado."));
     }
 }
