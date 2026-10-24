@@ -8,8 +8,8 @@ import com.example.appsaudebackend.Modules.Auth.Service.AuthAccountService;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthService;
 import com.example.appsaudebackend.Modules.Auth.Service.GoogleIdentityService;
 import com.example.appsaudebackend.Modules.Auth.Service.JwtService;
-import com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioModel;
-import com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioRepository;
+import com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteModel;
+import com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteRepository;
 import com.example.appsaudebackend.Shared.Exception.ConflitoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +35,7 @@ class AuthServiceRegistrationTest {
     @Mock AuthenticationManager authenticationManager;
     @Mock JwtService jwtService;
     @Mock UsuarioAuthRepository authRepository;
-    @Mock UsuarioRepository usuarioRepository;
+    @Mock PacienteRepository pacienteRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock AuthAccountService accountService;
     @Mock GoogleIdentityService googleIdentityService;
@@ -66,8 +66,8 @@ class AuthServiceRegistrationTest {
                 () -> assertEquals(Role.USUARIO, auth.getRole()),
                 () -> assertNotNull(auth.getInternalKey())
         );
-        ArgumentCaptor<UsuarioModel> userCaptor = ArgumentCaptor.forClass(UsuarioModel.class);
-        verify(usuarioRepository).save(userCaptor.capture());
+        ArgumentCaptor<PacienteModel> userCaptor = ArgumentCaptor.forClass(PacienteModel.class);
+        verify(pacienteRepository).save(userCaptor.capture());
         assertEquals("Ana Silva", userCaptor.getValue().getNome());
         assertEquals("ana@example.com", userCaptor.getValue().getEmail());
         assertEquals(auth, userCaptor.getValue().getUsuarioAuth());
@@ -83,7 +83,7 @@ class AuthServiceRegistrationTest {
 
         assertThrows(ConflitoException.class, () -> service.cadastrarPaciente(dto));
         verify(authRepository, never()).save(org.mockito.ArgumentMatchers.any());
-        verify(usuarioRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(pacienteRepository, never()).save(org.mockito.ArgumentMatchers.any());
         verifyNoInteractions(passwordEncoder);
     }
 }

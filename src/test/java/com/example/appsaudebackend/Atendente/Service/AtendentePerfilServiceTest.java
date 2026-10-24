@@ -2,8 +2,8 @@ package com.example.appsaudebackend.Atendente.Service;
 
 import com.example.appsaudebackend.Modules.Atendente.Dto.Request.AlterarSenhaAtendenteRequestDto;
 import com.example.appsaudebackend.Modules.Atendente.Dto.Request.AtualizarAtendenteRequestDto;
-import com.example.appsaudebackend.Modules.Atendente.Pesistencia.AtendenteModel;
-import com.example.appsaudebackend.Modules.Atendente.Pesistencia.AtendenteRepository;
+import com.example.appsaudebackend.Modules.Atendente.Persistencia.AtendenteModel;
+import com.example.appsaudebackend.Modules.Atendente.Persistencia.AtendenteRepository;
 import com.example.appsaudebackend.Modules.Atendente.Service.AtendentePerfilService;
 import com.example.appsaudebackend.Modules.Auth.Model.UsuarioAuth;
 import com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository;

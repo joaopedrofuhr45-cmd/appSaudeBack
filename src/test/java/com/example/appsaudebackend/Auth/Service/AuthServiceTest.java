@@ -31,7 +31,7 @@ class AuthServiceTest {
     @Mock AuthenticationManager authenticationManager;
     @Mock JwtService jwtService;
     @Mock com.example.appsaudebackend.Modules.Auth.Repository.UsuarioAuthRepository authRepository;
-    @Mock com.example.appsaudebackend.Modules.Usuarios.Persistencia.UsuarioRepository usuarioRepository;
+    @Mock com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteRepository pacienteRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock AuthAccountService accountService;
     @Mock GoogleIdentityService googleIdentityService;
