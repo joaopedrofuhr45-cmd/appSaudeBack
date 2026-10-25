@@ -8,6 +8,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.LocalDateTime;
 
@@ -97,6 +99,16 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 request
         );
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> arquivoGrande(MaxUploadSizeExceededException exception, HttpServletRequest request) {
+        return responder(HttpStatus.PAYLOAD_TOO_LARGE, "ARQUIVO_GRANDE", "A imagem deve ter no máximo 2 MB.", request);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> parteAusente(MissingServletRequestPartException exception, HttpServletRequest request) {
+        return responder(HttpStatus.BAD_REQUEST, "REQUISICAO_INVALIDA", "Envie uma imagem no campo 'foto'.", request);
     }
 
     @ExceptionHandler(Exception.class)

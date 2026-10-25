@@ -11,6 +11,7 @@ import com.example.appsaudebackend.Modules.Paciente.Service.PacientePerfilServic
 import com.example.appsaudebackend.Shared.Exception.ConflitoException;
 import com.example.appsaudebackend.Shared.Exception.RegraNegocioException;
 import com.example.appsaudebackend.Shared.Exception.RecursoNaoEncontradoException;
+import com.example.appsaudebackend.Modules.Perfil.Service.FotoPerfilService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +29,7 @@ class PacientePerfilServiceTest {
     @Mock PacienteRepository pacienteRepository;
     @Mock UsuarioAuthRepository authRepository;
     @Mock PasswordEncoder passwordEncoder;
+    @Mock FotoPerfilService fotoService;
     @Mock AuthAccountService accountService;
     @InjectMocks PacientePerfilService service;
 
@@ -101,24 +103,23 @@ class PacientePerfilServiceTest {
     void alterarSenhaVerificaAtualECodificaNovaSenha() {
         UsuarioAuth auth = paciente().getUsuarioAuth();
         when(accountService.encontrarPorEmail("ana@example.com")).thenReturn(Optional.of(auth));
-        when(passwordEncoder.matches("atual", "hash-antiga")).thenReturn(true);
         when(passwordEncoder.matches("nova", "hash-antiga")).thenReturn(false);
         when(passwordEncoder.encode("nova")).thenReturn("hash-nova");
 
-        service.alterarSenha("ana@example.com", new AlterarSenhaRequestDto("atual", "nova"));
+        service.alterarSenha("ana@example.com", new AlterarSenhaRequestDto("nova"));
 
         assertEquals("hash-nova", auth.getSenha());
         verify(authRepository).save(auth);
     }
 
     @Test
-    void senhaAtualIncorretaNaoPersiste() {
+    void novaSenhaIgualASenhaAtualNaoSalva() {
         UsuarioAuth auth = paciente().getUsuarioAuth();
         when(accountService.encontrarPorEmail("ana@example.com")).thenReturn(Optional.of(auth));
-        when(passwordEncoder.matches("incorreta", "hash-antiga")).thenReturn(false);
+        when(passwordEncoder.matches("nova", "hash-antiga")).thenReturn(true);
 
         assertThrows(RegraNegocioException.class, () -> service.alterarSenha("ana@example.com",
-                new AlterarSenhaRequestDto("incorreta", "nova")));
+                new AlterarSenhaRequestDto("nova")));
         verify(authRepository, never()).save(any());
     }
 
