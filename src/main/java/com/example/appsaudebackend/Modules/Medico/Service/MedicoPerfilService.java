@@ -11,6 +11,7 @@ import com.example.appsaudebackend.Shared.Exception.RecursoNaoEncontradoExceptio
 import com.example.appsaudebackend.Shared.Exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.appsaudebackend.Modules.Perfil.Service.FotoPerfilService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class MedicoPerfilService {
     private final UsuarioAuthRepository authRepository;
     private final AuthAccountService accountService;
     private final PasswordEncoder passwordEncoder;
+    private final FotoPerfilService fotoService;
 
     @Transactional(readOnly = true)
     public MedicoPerfilResponseDto obter(String email) { return toResponse(find(email)); }
@@ -42,9 +44,6 @@ public class MedicoPerfilService {
     public void alterarSenha(String email, AlterarSenhaMedicoRequestDto dto) {
         MedicoModel medico = find(email);
         var auth = medico.getUsuarioAuth();
-        if (!passwordEncoder.matches(dto.senhaAtual(), auth.getSenha())) {
-            throw new RegraNegocioException("A senha atual está incorreta.");
-        }
         if (passwordEncoder.matches(dto.novaSenha(), auth.getSenha())) {
             throw new RegraNegocioException("A nova senha deve ser diferente da senha atual.");
         }
@@ -58,6 +57,6 @@ public class MedicoPerfilService {
     }
 
     private MedicoPerfilResponseDto toResponse(MedicoModel m) {
-        return new MedicoPerfilResponseDto(m.getNome(), m.getEmail(), m.getTelefone(), m.getCrm(), m.getEspecialidade());
+        return new MedicoPerfilResponseDto(m.getNome(), m.getEmail(), m.getTelefone(), m.getCrm(), m.getEspecialidade(), fotoService.fotoUrl(m.getUsuarioAuth()));
     }
 }

@@ -9,6 +9,7 @@ import com.example.appsaudebackend.Modules.Paciente.Persistencia.*;
 import com.example.appsaudebackend.Shared.Exception.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.appsaudebackend.Modules.Perfil.Service.FotoPerfilService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ public class PacientePerfilService {
     private final PacienteRepository pacienteRepository;
     private final UsuarioAuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FotoPerfilService fotoService;
     private final AuthAccountService accountService;
 
     @Transactional(readOnly = true)
@@ -42,8 +44,6 @@ public class PacientePerfilService {
     @Transactional
     public void alterarSenha(String email, AlterarSenhaRequestDto dto) {
         UsuarioAuth a = findAuth(email);
-        if (!passwordEncoder.matches(dto.senhaAtual(), a.getSenha()))
-            throw new RegraNegocioException("A senha atual está incorreta.");
         if (passwordEncoder.matches(dto.novaSenha(), a.getSenha()))
             throw new RegraNegocioException("A nova senha deve ser diferente da senha atual.");
         a.setSenha(passwordEncoder.encode(dto.novaSenha()));
@@ -59,6 +59,6 @@ public class PacientePerfilService {
     }
 
     private PerfilResponseDto toResponse(PacienteModel u) {
-        return new PerfilResponseDto(u.getNome(), u.getEmail(), u.getTelefone());
+        return new PerfilResponseDto(u.getNome(), u.getEmail(), u.getTelefone(), fotoService.fotoUrl(u.getUsuarioAuth()));
     }
 }

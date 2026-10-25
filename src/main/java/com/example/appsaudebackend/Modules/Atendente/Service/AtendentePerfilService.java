@@ -10,6 +10,7 @@ import com.example.appsaudebackend.Shared.Exception.RecursoNaoEncontradoExceptio
 import com.example.appsaudebackend.Shared.Exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.appsaudebackend.Modules.Perfil.Service.FotoPerfilService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class AtendentePerfilService {
     private final UsuarioAuthRepository authRepository;
     private final AuthAccountService accountService;
     private final PasswordEncoder passwordEncoder;
+    private final FotoPerfilService fotoService;
 
     @Transactional(readOnly = true)
     public AtendentePerfilResponseDto obter(String email) {
@@ -43,9 +45,6 @@ public class AtendentePerfilService {
     public void alterarSenha(String email, AlterarSenhaAtendenteRequestDto dto) {
         AtendenteModel atendente = find(email);
         var auth = atendente.getUsuarioAuth();
-        if (!passwordEncoder.matches(dto.senhaAtual(), auth.getSenha())) {
-            throw new RegraNegocioException("A senha atual está incorreta.");
-        }
         if (passwordEncoder.matches(dto.novaSenha(), auth.getSenha())) {
             throw new RegraNegocioException("A nova senha deve ser diferente da senha atual.");
         }
@@ -58,6 +57,6 @@ public class AtendentePerfilService {
     }
 
     private AtendentePerfilResponseDto toResponse(AtendenteModel a) {
-        return new AtendentePerfilResponseDto(a.getNome(), a.getEmail(), a.getTelefone(), a.getSetor());
+        return new AtendentePerfilResponseDto(a.getNome(), a.getEmail(), a.getTelefone(), a.getSetor(), fotoService.fotoUrl(a.getUsuarioAuth()));
     }
 }
