@@ -17,6 +17,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,13 +36,35 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // CSRF: o JWT vai em cookie, então o navegador o anexa sozinho nas requisições.
+        // Por isso toda requisição que altera dados (POST/PUT/PATCH/DELETE) precisa mandar
+        // o token no header X-XSRF-TOKEN. O front pega o token em GET /auth/csrf
+        // (o cookie XSRF-TOKEN é HttpOnly, só o navegador o reenvia).
+        CookieCsrfTokenRepository csrfRepository = new CookieCsrfTokenRepository(); // cookie HttpOnly: o JS não lê, o front usa o token de GET /auth/csrf
+        csrfRepository.setCookieCustomizer(cookie -> cookie.secure(cookieSecure).sameSite(cookieSameSite));
+
+        // handler simples (sem XOR) + atributo nulo = token carregado em toda requisição,
+        // assim o cookie XSRF-TOKEN já é emitido na primeira resposta
+        CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
+        csrfHandler.setCsrfRequestAttributeName(null);
+
         http.cors(cors -> {})
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfRepository)
+                .csrfTokenRequestHandler(csrfHandler)
+                // login e cadastro acontecem antes de existir sessão autenticada
+                .ignoringRequestMatchers("/auth/login", "/auth/google", "/auth/cadastro"))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/login", "/auth/google", "/auth/cadastro").permitAll()
+                .requestMatchers("/auth/login", "/auth/google", "/auth/cadastro", "/auth/csrf").permitAll()
                 .requestMatchers("/auth/logout", "/auth/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/consultas").hasRole("ATENDENTE")
                 .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("USUARIO", "ATENDENTE")

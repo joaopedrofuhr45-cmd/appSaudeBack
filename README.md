@@ -75,7 +75,7 @@ Em produção, o schema é gerenciado só pelo Flyway (`ddl-auto: validate`): no
 
 | Método e rota | Quem acessa |
 |---|---|
-| `POST /auth/login`, `POST /auth/google`, `POST /auth/cadastro` | Público |
+| `POST /auth/login`, `POST /auth/google`, `POST /auth/cadastro`, `GET /auth/csrf` | Público |
 | `POST /auth/logout`, `GET /auth/me` | Logado |
 | `GET /consultas` | Atendente |
 | `POST /consultas` | Paciente, atendente |
@@ -89,7 +89,21 @@ Em produção, o schema é gerenciado só pelo Flyway (`ddl-auto: validate`): no
 | `/medicos/me` (`GET`, `PUT`), `PATCH /medicos/me/senha`, `/medicos/me/foto`, `GET /medicos/me/consultas?data=` | Médico |
 | `/atendentes/me` (`GET`, `PUT`), `PATCH /atendentes/me/senha`, `/atendentes/me/foto` | Atendente |
 
+## CSRF
+
+O JWT vai em cookie, então o CSRF fica **ligado**. Toda requisição que altera dados (`POST`, `PUT`, `PATCH`, `DELETE`) precisa mandar o token no header `X-XSRF-TOKEN`, junto com o cookie `XSRF-TOKEN`. Só `login`, `google` e `cadastro` ficam de fora (acontecem antes de existir sessão).
+
+1. O front chama `GET /auth/csrf` (com `withCredentials`). A resposta traz `{ "headerName": "X-XSRF-TOKEN", "token": "..." }` e o cookie `XSRF-TOKEN` (HttpOnly) é salvo.
+2. Nas requisições seguintes, manda o `token` no header indicado.
+3. Sem o header (ou com valor diferente do cookie) a resposta é `403`.
+
+Como o front e o back ficam em domínios diferentes, o JS do front não consegue ler o cookie do back de qualquer jeito. Por isso o cookie é HttpOnly e o token vem no corpo de `/auth/csrf`.
+
 Erros seguem um formato único (`timestamp`, `status`, `error`, `message`, `path`).
+
+## Testes
+
+`./mvnw verify` roda tudo. Os testes de integração ficam em `src/test/java/.../integracao` e sobem a aplicação inteira (segurança, JWT em cookie, CSRF, JPA em H2): autenticação, CSRF e o fluxo de consultas por perfil.
 
 ## Limitações conhecidas
 
