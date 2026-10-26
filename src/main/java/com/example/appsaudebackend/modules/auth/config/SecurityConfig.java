@@ -46,8 +46,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CSRF: o JWT vai em cookie, então o navegador o anexa sozinho nas requisições.
         // Por isso toda requisição que altera dados (POST/PUT/PATCH/DELETE) precisa mandar
-        // o token no header X-XSRF-TOKEN. O front pega o token em GET /auth/csrf.
-        CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        // o token no header X-XSRF-TOKEN. O front pega o token em GET /auth/csrf
+        // (o cookie XSRF-TOKEN é HttpOnly, só o navegador o reenvia).
+        CookieCsrfTokenRepository csrfRepository = new CookieCsrfTokenRepository(); // cookie HttpOnly: o JS não lê, o front usa o token de GET /auth/csrf
         csrfRepository.setCookieCustomizer(cookie -> cookie.secure(cookieSecure).sameSite(cookieSameSite));
 
         // handler simples (sem XOR) + atributo nulo = token carregado em toda requisição,

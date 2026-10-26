@@ -93,11 +93,11 @@ Em produção, o schema é gerenciado só pelo Flyway (`ddl-auto: validate`): no
 
 O JWT vai em cookie, então o CSRF fica **ligado**. Toda requisição que altera dados (`POST`, `PUT`, `PATCH`, `DELETE`) precisa mandar o token no header `X-XSRF-TOKEN`, junto com o cookie `XSRF-TOKEN`. Só `login`, `google` e `cadastro` ficam de fora (acontecem antes de existir sessão).
 
-1. O front chama `GET /auth/csrf` (com `withCredentials`). A resposta traz `{ "headerName": "X-XSRF-TOKEN", "token": "..." }` e o cookie `XSRF-TOKEN` é salvo.
+1. O front chama `GET /auth/csrf` (com `withCredentials`). A resposta traz `{ "headerName": "X-XSRF-TOKEN", "token": "..." }` e o cookie `XSRF-TOKEN` (HttpOnly) é salvo.
 2. Nas requisições seguintes, manda o `token` no header indicado.
 3. Sem o header (ou com valor diferente do cookie) a resposta é `403`.
 
-Como o front e o back ficam em domínios diferentes, o JS do front não consegue ler o cookie do back, por isso o token vem no corpo de `/auth/csrf`.
+Como o front e o back ficam em domínios diferentes, o JS do front não consegue ler o cookie do back de qualquer jeito. Por isso o cookie é HttpOnly e o token vem no corpo de `/auth/csrf`.
 
 Erros seguem um formato único (`timestamp`, `status`, `error`, `message`, `path`).
 
