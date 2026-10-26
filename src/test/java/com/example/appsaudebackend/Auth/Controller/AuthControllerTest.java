@@ -2,6 +2,9 @@ package com.example.appsaudebackend.Auth.Controller;
 
 import com.example.appsaudebackend.Modules.Auth.Controller.AuthController;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthService;
+import com.example.appsaudebackend.Modules.Auth.Service.LoginAttemptService;
+import com.example.appsaudebackend.Shared.Exception.MuitasTentativasException;
+import org.springframework.security.authentication.BadCredentialsException;
 import com.example.appsaudebackend.Modules.Auth.Service.JwtService;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthUserDetailsService;
 
@@ -30,6 +33,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private LoginAttemptService loginAttemptService;
 
     @MockitoBean
     private JwtService jwtService;
@@ -76,5 +82,41 @@ class AuthControllerTest {
                                         """)
                 )
                 .andExpect(status().isBadRequest());
+    }
+
+    private static final String LOGIN_JSON = """
+            { "email": "ana@example.com", "senha": "errada123" }
+            """;
+
+    @Test
+    void deveResponder429ComRetryAfterQuandoBloqueado() throws Exception {
+        org.mockito.Mockito.doThrow(new MuitasTentativasException(120))
+                .when(loginAttemptService).verificarBloqueio(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq("ana@example.com"));
+
+        mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(LOGIN_JSON))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Retry-After", "120"));
+
+        org.mockito.Mockito.verifyNoInteractions(authService);
+    }
+
+    @Test
+    void deveRegistrarFalhaQuandoCredenciaisInvalidas() throws Exception {
+        when(authService.login("ana@example.com", "errada123")).thenThrow(new BadCredentialsException("x"));
+
+        mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(LOGIN_JSON))
+                .andExpect(status().isUnauthorized());
+
+        verify(loginAttemptService).registrarFalha(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq("ana@example.com"));
+    }
+
+    @Test
+    void deveZerarContadorQuandoLoginCorreto() throws Exception {
+        when(authService.login("ana@example.com", "errada123")).thenReturn("token");
+
+        mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(LOGIN_JSON))
+                .andExpect(status().isOk());
+
+        verify(loginAttemptService).registrarSucesso(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq("ana@example.com"));
     }
 }

@@ -2,6 +2,7 @@ package com.example.appsaudebackend.Shared.Exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -99,6 +100,15 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 request
         );
+    }
+
+    @ExceptionHandler(MuitasTentativasException.class)
+    public ResponseEntity<ErrorResponse> muitasTentativas(MuitasTentativasException exception, HttpServletRequest request) {
+        ResponseEntity<ErrorResponse> base = responder(
+                HttpStatus.TOO_MANY_REQUESTS, "MUITAS_TENTATIVAS", exception.getMessage(), request);
+        return ResponseEntity.status(base.getStatusCode())
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(exception.getRetryAfterSegundos()))
+                .body(base.getBody());
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

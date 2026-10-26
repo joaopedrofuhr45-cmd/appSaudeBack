@@ -6,6 +6,8 @@ import com.example.appsaudebackend.Modules.Auth.Dto.Request.GoogleLoginRequestDt
 import com.example.appsaudebackend.Modules.Auth.Dto.Response.MeResponseDto;
 import com.example.appsaudebackend.Modules.Auth.Model.UsuarioAuth;
 import com.example.appsaudebackend.Modules.Auth.Service.AuthService;
+import com.example.appsaudebackend.Modules.Auth.Service.LoginAttemptService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +27,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final LoginAttemptService loginAttempts;
 
     @Value("${jwt.expiration}")
     private long expiration;
@@ -35,8 +39,19 @@ public class AuthController {
     private String cookieSameSite;
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequestDto request, HttpServletResponse response) {
-        String token = authService.login(request.getEmail(), request.getSenha());
+    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequestDto request,
+                                      HttpServletRequest httpRequest, HttpServletResponse response) {
+        String ip = httpRequest.getRemoteAddr();
+        String email = request.getEmail();
+        loginAttempts.verificarBloqueio(ip, email);
+        String token;
+        try {
+            token = authService.login(email, request.getSenha());
+        } catch (AuthenticationException e) {
+            loginAttempts.registrarFalha(ip, email);
+            throw e;
+        }
+        loginAttempts.registrarSucesso(ip, email);
         adicionarCookie(response, token, Duration.ofMillis(expiration));
         return ResponseEntity.ok().build();
     }

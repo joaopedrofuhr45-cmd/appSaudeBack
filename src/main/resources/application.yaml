@@ -1,5 +1,7 @@
 server:
   port: ${PORT:8080}
+  # Atrás do proxy do host (Render etc.): usa o IP real do cliente do X-Forwarded-For
+  forward-headers-strategy: native
 
 spring:
   application:
@@ -20,6 +22,10 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000}
 
 app:
+  login:
+    max-tentativas-conta: ${LOGIN_MAX_TENTATIVAS_CONTA:5}
+    max-tentativas-ip: ${LOGIN_MAX_TENTATIVAS_IP:30}
+    janela-minutos: ${LOGIN_JANELA_MINUTOS:15}
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
   cors:
