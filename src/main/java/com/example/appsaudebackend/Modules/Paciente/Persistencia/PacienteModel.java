@@ -3,12 +3,14 @@ package com.example.appsaudebackend.Modules.Paciente.Persistencia;
 import com.example.appsaudebackend.Modules.Auth.Model.UsuarioAuth;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "usuarios")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PacienteModel {

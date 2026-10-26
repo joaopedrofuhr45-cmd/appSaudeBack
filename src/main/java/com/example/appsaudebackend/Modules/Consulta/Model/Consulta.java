@@ -4,14 +4,16 @@ import com.example.appsaudebackend.Modules.Medico.Persistencia.MedicoModel;
 import com.example.appsaudebackend.Modules.Paciente.Persistencia.PacienteModel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "consultas")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Consulta {

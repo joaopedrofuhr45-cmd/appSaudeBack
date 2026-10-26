@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
         return responder(
                 HttpStatus.UNAUTHORIZED,
                 "CREDENCIAIS_INVALIDAS",
-                "CPF ou senha inválidos.",
+                "E-mail ou senha inválidos.",
                 request
         );
     }
