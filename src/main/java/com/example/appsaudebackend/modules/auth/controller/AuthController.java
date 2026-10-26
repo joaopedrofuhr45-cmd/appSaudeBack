@@ -18,9 +18,11 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -78,6 +80,14 @@ public class AuthController {
                 .maxAge(Duration.ZERO).sameSite(cookieSameSite).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.noContent().build();
+    }
+
+    /** Entrega o token CSRF (o cookie XSRF-TOKEN também é emitido). O front manda o valor no header X-XSRF-TOKEN. */
+    @GetMapping("/csrf")
+    public ResponseEntity<Map<String, String>> csrf(HttpServletRequest request) {
+        CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+        if (token == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(Map.of("headerName", token.getHeaderName(), "token", token.getToken()));
     }
 
     @GetMapping("/me")
