@@ -1,0 +1,38 @@
+package com.example.appsaudebackend.modules.paciente.persistencia;
+
+import com.example.appsaudebackend.modules.auth.model.UsuarioAuth;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "usuarios")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class PacienteModel {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String nome;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column
+    private String telefone;
+
+    @OneToOne(optional = false)
+    @JoinColumn(
+            name = "usuario_auth_id",
+            nullable = false,
+            unique = true
+    )
+    private UsuarioAuth usuarioAuth;
+}

@@ -1,0 +1,64 @@
+package com.example.appsaudebackend.modules.paciente.service;
+
+import com.example.appsaudebackend.modules.auth.model.UsuarioAuth;
+import com.example.appsaudebackend.modules.auth.repository.UsuarioAuthRepository;
+import com.example.appsaudebackend.modules.auth.service.AuthAccountService;
+import com.example.appsaudebackend.modules.paciente.dto.request.*;
+import com.example.appsaudebackend.modules.paciente.dto.response.PerfilResponseDto;
+import com.example.appsaudebackend.modules.paciente.persistencia.*;
+import com.example.appsaudebackend.shared.exception.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.appsaudebackend.modules.perfil.service.FotoPerfilService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class PacientePerfilService {
+    private final PacienteRepository pacienteRepository;
+    private final UsuarioAuthRepository authRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final FotoPerfilService fotoService;
+    private final AuthAccountService accountService;
+
+    @Transactional(readOnly = true)
+    public PerfilResponseDto obter(String email) {
+        return toResponse(findUsuario(email));
+    }
+
+    @Transactional
+    public PerfilResponseDto atualizar(String email, AtualizarPerfilRequestDto dto) {
+        PacienteModel u = findUsuario(email);
+        UsuarioAuth auth = u.getUsuarioAuth();
+        String novoEmail = accountService.normalizar(dto.email());
+        accountService.garantirEmailDisponivel(novoEmail, auth.getId());
+        u.setNome(dto.nome());
+        u.setEmail(novoEmail);
+        u.setTelefone(dto.telefone());
+        auth.setEmail(novoEmail);
+        authRepository.save(auth);
+        return toResponse(pacienteRepository.save(u));
+    }
+
+    @Transactional
+    public void alterarSenha(String email, AlterarSenhaRequestDto dto) {
+        UsuarioAuth a = findAuth(email);
+        if (passwordEncoder.matches(dto.novaSenha(), a.getSenha()))
+            throw new RegraNegocioException("A nova senha deve ser diferente da senha atual.");
+        a.setSenha(passwordEncoder.encode(dto.novaSenha()));
+        authRepository.save(a);
+    }
+
+    private PacienteModel findUsuario(String email) {
+        return pacienteRepository.findByUsuarioAuthEmailIgnoreCase(email).orElseThrow(() -> new RecursoNaoEncontradoException("Paciente não encontrado."));
+    }
+
+    private UsuarioAuth findAuth(String email) {
+        return accountService.encontrarPorEmail(email).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário autenticado não encontrado."));
+    }
+
+    private PerfilResponseDto toResponse(PacienteModel u) {
+        return new PerfilResponseDto(u.getNome(), u.getEmail(), u.getTelefone(), fotoService.fotoUrl(u.getUsuarioAuth()));
+    }
+}
