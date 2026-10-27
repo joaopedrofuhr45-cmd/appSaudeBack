@@ -77,7 +77,8 @@ public class ConsultaService {
         }
         MedicoModel medico = medicoService.buscarPorUsuarioAuthId(solicitante.getId());
         if (!consulta.getMedico().getId().equals(medico.getId())) {
-            throw new RegraNegocioException("A consulta não pertence ao médico autenticado.");
+            // 404 genérico: não revela que o ID existe para quem não é o dono
+            throw new RecursoNaoEncontradoException("Consulta não encontrada.");
         }
         if (consulta.getStatus() == StatusConsulta.CANCELADO) {
             throw new RegraNegocioException("Não é possível finalizar uma consulta cancelada.");
@@ -112,7 +113,9 @@ public class ConsultaService {
     @Transactional
     public void criar(ConsultaRequestDto dto, UsuarioAuth solicitante) {
         PacienteModel paciente = resolverPaciente(dto, solicitante);
-        MedicoModel medico = medicoService.buscarPorId(dto.getMedicoId());
+        // Trava a linha do médico até o fim da transação: dois agendamentos simultâneos
+        // no mesmo horário ficam em fila e o segundo enxerga o primeiro na checagem abaixo.
+        MedicoModel medico = medicoService.buscarPorIdParaAgendamento(dto.getMedicoId());
         // consulta cancelada libera o horário
         if (consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
                 dto.getMedicoId(), dto.getDataHora(), StatusConsulta.CANCELADO)) {
@@ -136,13 +139,13 @@ public class ConsultaService {
     private void validarAcesso(Consulta consulta, UsuarioAuth solicitante) {
         if (solicitante.getRole() == Role.MEDICO) {
             if (!consulta.getMedico().getUsuarioAuth().getId().equals(solicitante.getId()))
-                throw new RegraNegocioException("A consulta não pertence ao médico autenticado.");
+                throw new RecursoNaoEncontradoException("Consulta não encontrada.");
             return;
         }
         if (solicitante.getRole() == Role.ATENDENTE) return;
         if (solicitante.getRole() == Role.USUARIO &&
                 !consulta.getPaciente().getUsuarioAuth().getId().equals(solicitante.getId()))
-            throw new RegraNegocioException("A consulta não pertence ao paciente autenticado.");
+            throw new RecursoNaoEncontradoException("Consulta não encontrada.");
         if (solicitante.getRole() != Role.USUARIO)
             throw new RegraNegocioException("Perfil sem acesso à consulta.");
     }

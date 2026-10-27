@@ -83,13 +83,13 @@ class AuthIntegracaoTest extends IntegracaoBase {
 
     @Test
     void meSemLoginEBloqueado() throws Exception {
-        mockMvc.perform(get("/auth/me")).andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/auth/me")).andExpect(status().isUnauthorized());
     }
 
     @Test
     void meComCookieInvalidoEBloqueado() throws Exception {
         mockMvc.perform(get("/auth/me").cookie(new Cookie("auth_token", "token.invalido.aqui")))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

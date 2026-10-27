@@ -146,7 +146,7 @@ class ConsultaIntegracaoTest extends IntegracaoBase {
     @Test
     void agendaSemLoginEBloqueada() throws Exception {
         mockMvc.perform(get("/consultas").param("data", diaUnico().toString()))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -202,7 +202,7 @@ class ConsultaIntegracaoTest extends IntegracaoBase {
         mockMvc.perform(comCsrf(patch("/consultas/" + id + "/finalizar"), sessaoIntruso)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -233,7 +233,7 @@ class ConsultaIntegracaoTest extends IntegracaoBase {
         long id = idDaPrimeiraConsultaDoDia(atendente, dia);
 
         mockMvc.perform(comCsrf(patch("/consultas/" + id + "/cancelar"), outro))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -265,7 +265,7 @@ class ConsultaIntegracaoTest extends IntegracaoBase {
                 .andExpect(jsonPath("$.medico").value("Dr. Xavi"));
 
         mockMvc.perform(get("/consultas/" + id).cookie(outro.auth()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
 
         mockMvc.perform(get("/consultas/" + id).cookie(atendente.auth()))
                 .andExpect(status().isOk());

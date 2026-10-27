@@ -34,6 +34,12 @@ public class MedicoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado."));
     }
 
+    /** Igual a buscarPorId, mas trava o médico (FOR UPDATE) até o fim da transação de quem chamou. */
+    public MedicoModel buscarPorIdParaAgendamento(Long id) {
+        return medicoRepository.buscarPorIdComLock(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado."));
+    }
+
     public MedicoModel buscarPorUsuarioAuthId(Long usuarioAuthId) {
         return medicoRepository.findByUsuarioAuthId(usuarioAuthId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado."));
