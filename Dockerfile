@@ -11,4 +11,7 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Em container o padrão seria "dev" (H2 em memória); aqui o padrão é produção.
+ENV SPRING_PROFILES_ACTIVE=prod
+# Fuso do Brasil: o @Future e as datas das consultas usam o relógio do servidor.
+ENTRYPOINT ["java", "-Duser.timezone=America/Sao_Paulo", "-jar", "app.jar"]

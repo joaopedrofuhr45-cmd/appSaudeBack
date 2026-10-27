@@ -113,7 +113,9 @@ public class ConsultaService {
     public void criar(ConsultaRequestDto dto, UsuarioAuth solicitante) {
         PacienteModel paciente = resolverPaciente(dto, solicitante);
         MedicoModel medico = medicoService.buscarPorId(dto.getMedicoId());
-        if (consultaRepository.existsByMedicoIdAndDataHora(dto.getMedicoId(), dto.getDataHora())) {
+        // consulta cancelada libera o horário
+        if (consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
+                dto.getMedicoId(), dto.getDataHora(), StatusConsulta.CANCELADO)) {
             throw new RegraNegocioException("O médico já possui uma consulta agendada nesse horário.");
         }
         Consulta consulta = new Consulta();

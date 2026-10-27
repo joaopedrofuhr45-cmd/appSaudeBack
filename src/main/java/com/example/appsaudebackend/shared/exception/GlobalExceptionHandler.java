@@ -2,18 +2,26 @@ package com.example.appsaudebackend.shared.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -121,11 +129,40 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.BAD_REQUEST, "REQUISICAO_INVALIDA", "Envie uma imagem no campo 'foto'.", request);
     }
 
+    // JSON malformado, parâmetro obrigatório ausente, id/data em formato errado
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ErrorResponse> requisicaoInvalida(Exception exception, HttpServletRequest request) {
+        return responder(HttpStatus.BAD_REQUEST, "REQUISICAO_INVALIDA", "Requisição inválida.", request);
+    }
+
+    // Ex.: duas requisições simultâneas tentando criar o mesmo e-mail (unique no banco)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> integridade(DataIntegrityViolationException exception, HttpServletRequest request) {
+        log.warn("Violação de integridade em {}", request.getRequestURI(), exception);
+        return responder(HttpStatus.CONFLICT, "CONFLITO", "Registro já existe.", request);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> rotaInexistente(NoResourceFoundException exception, HttpServletRequest request) {
+        return responder(HttpStatus.NOT_FOUND, "RECURSO_NAO_ENCONTRADO", "Rota não encontrada.", request);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> metodoNaoPermitido(
+            HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
+        return responder(HttpStatus.METHOD_NOT_ALLOWED, "METODO_NAO_PERMITIDO", "Método não permitido.", request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> erroInterno(
             Exception exception,
             HttpServletRequest request
     ) {
+        log.error("Erro não tratado em {} {}", request.getMethod(), request.getRequestURI(), exception);
         return responder(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "ERRO_INTERNO",

@@ -53,7 +53,8 @@ class ConsultaServiceTest {
         PacienteModel paciente = new PacienteModel();
         when(pacienteService.buscarPorUsuarioAuthId(1L)).thenReturn(paciente);
         when(medicoService.buscarPorId(7L)).thenReturn(new MedicoModel());
-        when(consultaRepository.existsByMedicoIdAndDataHora(7L, pedido().getDataHora())).thenReturn(false);
+        when(consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
+                7L, pedido().getDataHora(), StatusConsulta.CANCELADO)).thenReturn(false);
 
         service.criar(pedido(), auth);
 
@@ -71,7 +72,8 @@ class ConsultaServiceTest {
         auth.setRole(Role.USUARIO);
         when(pacienteService.buscarPorUsuarioAuthId(1L)).thenReturn(new PacienteModel());
         when(medicoService.buscarPorId(7L)).thenReturn(new MedicoModel());
-        when(consultaRepository.existsByMedicoIdAndDataHora(7L, pedido().getDataHora())).thenReturn(true);
+        when(consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
+                7L, pedido().getDataHora(), StatusConsulta.CANCELADO)).thenReturn(true);
 
         assertThrows(RegraNegocioException.class, () -> service.criar(pedido(), auth));
         verify(consultaRepository, never()).save(any());

@@ -44,14 +44,13 @@ shared/
 
 Pré-requisito: JDK 17.
 
-1. Copie `.env.example` para `.env` e ajuste (principalmente o `JWT_SECRET`).
+1. Copie `.env.example` para `.env` e preencha o `JWT_SECRET` com um valor em **Base64** (mínimo 32 bytes). Gere com `openssl rand -base64 48`.
 2. Rode:
    ```bash
    ./mvnw spring-boot:run
    ```
-3. A API sobe em `http://localhost:8080` com o banco H2 em memória (perfil `dev`). Console do H2 em `/h2-console`.
-
-No Windows (PowerShell), sem `.env`: `$env:JWT_SECRET="seu-segredo-longo"; ./mvnw spring-boot:run`
+3. A API sobe em `http://localhost:8080` com o banco H2 em memória (perfil `dev`).
+No Windows (PowerShell), sem `.env`: `$env:JWT_SECRET="<valor em Base64>"; ./mvnw spring-boot:run`
 
 Testes: `./mvnw test`
 
