@@ -52,8 +52,9 @@ class ConsultaServiceTest {
         auth.setRole(Role.USUARIO);
         PacienteModel paciente = new PacienteModel();
         when(pacienteService.buscarPorUsuarioAuthId(1L)).thenReturn(paciente);
-        when(medicoService.buscarPorId(7L)).thenReturn(new MedicoModel());
-        when(consultaRepository.existsByMedicoIdAndDataHora(7L, pedido().getDataHora())).thenReturn(false);
+        when(medicoService.buscarPorIdParaAgendamento(7L)).thenReturn(new MedicoModel());
+        when(consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
+                7L, pedido().getDataHora(), StatusConsulta.CANCELADO)).thenReturn(false);
 
         service.criar(pedido(), auth);
 
@@ -70,8 +71,9 @@ class ConsultaServiceTest {
         auth.setId(1L);
         auth.setRole(Role.USUARIO);
         when(pacienteService.buscarPorUsuarioAuthId(1L)).thenReturn(new PacienteModel());
-        when(medicoService.buscarPorId(7L)).thenReturn(new MedicoModel());
-        when(consultaRepository.existsByMedicoIdAndDataHora(7L, pedido().getDataHora())).thenReturn(true);
+        when(medicoService.buscarPorIdParaAgendamento(7L)).thenReturn(new MedicoModel());
+        when(consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
+                7L, pedido().getDataHora(), StatusConsulta.CANCELADO)).thenReturn(true);
 
         assertThrows(RegraNegocioException.class, () -> service.criar(pedido(), auth));
         verify(consultaRepository, never()).save(any());
@@ -89,7 +91,7 @@ class ConsultaServiceTest {
         Consulta consulta = consulta(paciente, medico(), StatusConsulta.AGENDADO);
         when(consultaRepository.findById(4L)).thenReturn(Optional.of(consulta));
 
-        assertThrows(RegraNegocioException.class, () -> service.obter(4L, solicitante));
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.obter(4L, solicitante));
     }
 
     @Test
@@ -147,7 +149,7 @@ class ConsultaServiceTest {
         Consulta consulta = consulta(paciente, medico(), StatusConsulta.AGENDADO);
         when(consultaRepository.findById(4L)).thenReturn(Optional.of(consulta));
 
-        assertThrows(RegraNegocioException.class, () -> service.cancelar(4L, solicitante));
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.cancelar(4L, solicitante));
         verify(consultaRepository, never()).save(any());
     }
 

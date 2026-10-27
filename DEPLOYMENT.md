@@ -9,4 +9,4 @@ COOKIE_SAME_SITE=None
 COOKIE_SECURE=true
 ```
 
-`SameSite=None` requires `Secure`, and `Secure` requires HTTPS. For the same site, `COOKIE_SAME_SITE=Lax` is sufficient. Also configure the existing `DB_URL`, `DB_DRIVER`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, and `COOKIE_SECURE` values for the hosting environment.
+`SameSite=None` requires `Secure`, and `Secure` requires HTTPS. For the same site, `COOKIE_SAME_SITE=Lax` is sufficient. Also configure `SPRING_PROFILES_ACTIVE=prod`, `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET` (Base64, at least 32 bytes: `openssl rand -base64 48`), and `COOKIE_SECURE` for the hosting environment. The Dockerfile already defaults to the `prod` profile and the `America/Sao_Paulo` time zone.
