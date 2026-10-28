@@ -17,8 +17,9 @@ jobs:
           java-version: '17'
           cache: maven
 
-      # JWT_SECRET não tem valor padrão no application.yaml; aqui vai um valor só de teste.
+      # JWT_SECRET não tem valor padrão no application.yaml e o JwtService decodifica como Base64,
+      # então aqui vai um valor Base64 só de teste (não é um segredo real).
       - name: Rodar testes
         env:
-          JWT_SECRET: segredo-so-para-testes-no-ci-com-mais-de-32-caracteres
+          JWT_SECRET: dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdGVzdGluZy0zMi1ieXRlcw==
         run: ./mvnw -B -ntp verify
